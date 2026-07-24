@@ -1,4 +1,4 @@
-here// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.settings.screens
 
 import android.content.Intent
@@ -6,8 +6,6 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,7 +35,11 @@ fun AboutScreen(
                 title = { Text(stringResource(R.string.settings_screen_about)) },
                 navigationIcon = {
                     IconButton(onClick = onClickBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        // FIXED: Using the local drawable instead of the Compose Icons library
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_back), 
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -91,8 +93,8 @@ fun AboutScreen(
                 title = "Saurav",
                 subtitle = "Lead Developer & UI/UX Designer",
                 description = "Bringing Material You aesthetics, custom tools, and a seamless typing experience to FrostKeys.",
-                githubUrl = "https://github.com/Saurav-02/FrostKeys",
-                telegramUrl = "https://t.me/saurav124x"
+                githubUrl = "[https://github.com/Saurav-02/FrostKeys](https://github.com/Saurav-02/FrostKeys)",
+                telegramUrl = "[https://t.me/saurav124x](https://t.me/saurav124x)"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -102,7 +104,7 @@ fun AboutScreen(
                 title = "Original HeliBoard Project",
                 subtitle = "Core Architecture & AOSP Base",
                 description = "FrostKeys is proudly built upon the incredibly solid foundation of the open-source HeliBoard project.",
-                githubUrl = "https://github.com/HeliBorg/HeliBoard",
+                githubUrl = "[https://github.com/HeliBorg/HeliBoard](https://github.com/HeliBorg/HeliBoard)",
                 telegramUrl = null
             )
         }
@@ -120,7 +122,7 @@ private fun DeveloperCard(
     val context = LocalContext.current
     
     Card(
-        shape = RoundedCornerShape(24.dp), // Expressive high-radius corners
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
         ),
