@@ -6,6 +6,7 @@
 package helium314.keyboard.latin.suggestions
 
 import android.annotation.SuppressLint
+import androidx.compose.runtime.rememberCoroutineScope
 import android.content.ClipData
 import android.content.Context
 import android.content.SharedPreferences
