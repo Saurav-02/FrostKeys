@@ -108,25 +108,6 @@ fun MainSettingsScreen(
         }
         Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)) { innerPadding ->
             LazyColumn(contentPadding = innerPadding) {
-                if (!telegramJoined) {
-                    item("telegram_invite") {
-                        TelegramInviteCard(
-                            onJoinClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/FrostKeys"))
-                                ctx.startActivity(intent)
-                                SettingsActivity.clickedTelegramJoin = true
-                            }
-                        )
-                    }
-                }
-
-                item("quick_setup") {
-                    QuickSetupCard(
-                        onClickGestureTyping = onClickGestureTyping,
-                        onClickDictionaries = onClickDictionaries,
-                        onClickCloud = onClickCloud,
-                    )
-                }
 
                 item("language") {
                     Preference(
@@ -207,14 +188,6 @@ fun MainSettingsScreen(
                         name = stringResource(R.string.settings_screen_advanced),
                         onClick = onClickAdvanced,
                         icon = R.drawable.ic_settings_advanced
-                    ) { NextScreenIcon() }
-                }
-                item("welcome_wizard") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_setup_wizard),
-                        description = stringResource(R.string.settings_screen_setup_wizard_summary),
-                        onClick = onClickWelcomeWizard,
-                        icon = R.drawable.ic_setup_key
                     ) { NextScreenIcon() }
                 }
                 item("about") {
@@ -341,113 +314,6 @@ private fun QuickSetupCard(
                         onClick = onClickCloud,
                         isComplete = isCloudComplete,
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickSetupStep(
-    icon: Int,
-    title: String,
-    description: String,
-    onClick: () -> Unit,
-    isComplete: Boolean = false,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp)
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = null,
-            tint = if (isComplete) Color(0xFF388E3C) else MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isComplete) Color(0xFF388E3C) else MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isComplete) Color(0xFF388E3C).copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        if (isComplete) {
-            Icon(
-                painter = painterResource(R.drawable.ic_setup_check),
-                contentDescription = "Complete",
-                tint = Color(0xFF388E3C),
-                modifier = Modifier.size(20.dp)
-            )
-        } else {
-            NextScreenIcon()
-        }
-    }
-}
-@Composable
-private fun TelegramInviteCard(
-    onJoinClick: () -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF229ED9)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 0.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onJoinClick() }
-                .padding(16.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_telegram_white),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(36.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Join our Telegram Channel",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Get announcements, sneak peeks, and share ideas! Tap here to join.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.85f)
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_left),
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.8f),
-                modifier = (if (LocalLayoutDirection.current == LayoutDirection.Ltr) Modifier.scale(-1f, 1f) else Modifier)
-                    .size(20.dp)
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
 private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
