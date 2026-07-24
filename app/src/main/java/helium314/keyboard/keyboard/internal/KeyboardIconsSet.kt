@@ -158,6 +158,7 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.GIFS -> R.drawable.ic_klipy_gifs
                     ToolbarKey.STICKERS -> R.drawable.ic_klipy_stickers
                     ToolbarKey.RESIZE -> R.drawable.ic_resize_vertical_rounded
+                    ToolbarKey.TRANSLATE -> R.drawable.ic_translate
                 })
             }
         } }
@@ -223,6 +224,7 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.GIFS -> R.drawable.ic_klipy_gifs
                     ToolbarKey.STICKERS -> R.drawable.ic_klipy_stickers
                     ToolbarKey.RESIZE -> R.drawable.ic_resize_vertical_rounded
+                    ToolbarKey.TRANSLATE -> R.drawable.ic_translate
                 })
             }
         } }
@@ -288,6 +290,7 @@ class KeyboardIconsSet private constructor() {
                     ToolbarKey.GIFS -> R.drawable.ic_klipy_gifs
                     ToolbarKey.STICKERS -> R.drawable.ic_klipy_stickers
                     ToolbarKey.RESIZE -> R.drawable.ic_resize_vertical_rounded
+                    ToolbarKey.TRANSLATE -> R.drawable.ic_translate
                 })
             }
         } }
