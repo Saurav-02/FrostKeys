@@ -1,52 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.settings.screens
-import android.content.Intent
-import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.draw.scale
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -58,16 +24,9 @@ import helium314.keyboard.latin.R
 import helium314.keyboard.latin.utils.JniUtils
 import helium314.keyboard.latin.utils.SubtypeLocaleUtils.displayName
 import helium314.keyboard.latin.utils.SubtypeSettings
-import helium314.keyboard.latin.utils.NextScreenIcon
-import helium314.keyboard.latin.utils.getActivity
-import helium314.keyboard.latin.utils.prefs
-import helium314.keyboard.latin.utils.locale
-import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.settings.SearchSettingsScreen
-import helium314.keyboard.settings.SettingsActivity
 import helium314.keyboard.latin.utils.Theme
 import helium314.keyboard.settings.initPreview
-import helium314.keyboard.settings.preferences.Preference
 import helium314.keyboard.latin.utils.previewDark
 import helium314.keyboard.settings.screens.gesturedata.END_DATE_EPOCH_MILLIS
 import helium314.keyboard.settings.screens.gesturedata.TWO_WEEKS_IN_MILLIS
@@ -86,116 +45,142 @@ fun MainSettingsScreen(
     onClickLayouts: () -> Unit,
     onClickDictionaries: () -> Unit,
     onClickCloud: () -> Unit,
-    onClickWelcomeWizard: () -> Unit,
+    onClickWelcomeWizard: () -> Unit, // Kept to prevent navigation graph crashes
     onClickBack: () -> Unit,
 ) {
+    val enabledSubtypes = remember { SubtypeSettings.getEnabledSubtypes(true) }
+    val enabledSubtypeNames = remember(enabledSubtypes) {
+        enabledSubtypes.joinToString(", ") { it.displayName() }
+    }
+    val showDataGathering = remember {
+        JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS
+    }
+
     SearchSettingsScreen(
         onClickBack = onClickBack,
         title = stringResource(R.string.ime_settings),
         settings = emptyList(),
     ) {
-        val enabledSubtypes = remember { SubtypeSettings.getEnabledSubtypes(true) }
-        val enabledSubtypeNames = remember(enabledSubtypes) {
-            enabledSubtypes.joinToString(", ") { it.displayName() }
-        }
-        val showDataGathering = remember {
-            JniUtils.sHaveGestureLib && System.currentTimeMillis() < END_DATE_EPOCH_MILLIS + TWO_WEEKS_IN_MILLIS
-        }
-        val ctx = LocalContext.current
-        val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
-        val telegramJoined = remember(b?.value) {
-            ctx.prefs().getBoolean("pref_telegram_joined", false)
-        }
-        Scaffold(contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)) { innerPadding ->
-            LazyColumn(contentPadding = innerPadding) {
-
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom),
+            containerColor = Color.Transparent
+        ) { innerPadding ->
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 8.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 24.dp
+                ),
+                modifier = Modifier.fillMaxSize()
+            ) {
                 item("language") {
-                    Preference(
-                        name = stringResource(R.string.language_and_layouts_title),
-                        description = enabledSubtypeNames,
-                        onClick = onClickLanguage,
-                        icon = R.drawable.ic_settings_languages
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.language_and_layouts_title),
+                        subtitle = enabledSubtypeNames,
+                        icon = R.drawable.ic_settings_languages,
+                        iconBgColor = Color(0xFF1976D2), // Blue
+                        onClick = onClickLanguage
+                    )
                 }
                 item("preferences") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_preferences),
-                        onClick = onClickPreferences,
-                        icon = R.drawable.ic_settings_preferences
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_preferences),
+                        subtitle = "General keyboard behaviors and sizes",
+                        icon = R.drawable.ic_settings_preferences,
+                        iconBgColor = Color(0xFF00897B), // Teal
+                        onClick = onClickPreferences
+                    )
                 }
                 item("appearance") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_appearance),
-                        onClick = onClickAppearance,
-                        icon = R.drawable.ic_settings_appearance
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_appearance),
+                        subtitle = "Themes, layouts, and visual styles",
+                        icon = R.drawable.ic_settings_appearance,
+                        iconBgColor = Color(0xFFD81B60), // Pink
+                        onClick = onClickAppearance
+                    )
                 }
                 item("toolbar") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_toolbar),
-                        onClick = onClickToolbar,
-                        icon = R.drawable.ic_settings_toolbar
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_toolbar),
+                        subtitle = "Customize quick access buttons",
+                        icon = R.drawable.ic_settings_toolbar,
+                        iconBgColor = Color(0xFF8E24AA), // Purple
+                        onClick = onClickToolbar
+                    )
                 }
                 item("cloud") {
-                    Preference(
-                        name = stringResource(R.string.cloud_features),
-                        onClick = onClickCloud,
-                        icon = R.drawable.ic_cloud
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.cloud_features),
+                        subtitle = "AI integrations and online services",
+                        icon = R.drawable.ic_cloud,
+                        iconBgColor = Color(0xFF00ACC1), // Cyan
+                        onClick = onClickCloud
+                    )
                 }
                 item("gesture_typing") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_gesture),
-                        description = if (JniUtils.sHaveGestureLib) null else stringResource(R.string.gesture_not_loaded_summary),
-                        onClick = onClickGestureTyping,
-                        icon = R.drawable.ic_settings_gesture
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_gesture),
+                        subtitle = if (JniUtils.sHaveGestureLib) "Glide typing enabled" else stringResource(R.string.gesture_not_loaded_summary),
+                        icon = R.drawable.ic_settings_gesture,
+                        iconBgColor = Color(0xFF3949AB), // Indigo
+                        onClick = onClickGestureTyping
+                    )
                 }
                 if (showDataGathering) {
                     item("data_gathering") {
-                        Preference(
-                            name = stringResource(R.string.gesture_data_screen),
-                            onClick = onClickDataGathering,
-                            icon = R.drawable.ic_settings_gesture
-                        ) { NextScreenIcon() }
+                        ExpressiveCardPreference(
+                            title = stringResource(R.string.gesture_data_screen),
+                            subtitle = "Improve glide typing models",
+                            icon = R.drawable.ic_settings_gesture,
+                            iconBgColor = Color(0xFF546E7A), // Blue Grey
+                            onClick = onClickDataGathering
+                        )
                     }
                 }
                 item("correction") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_correction),
-                        onClick = onClickTextCorrection,
-                        icon = R.drawable.ic_settings_correction
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_correction),
+                        subtitle = "Auto-correction and suggestions",
+                        icon = R.drawable.ic_settings_correction,
+                        iconBgColor = Color(0xFFF4511E), // Deep Orange
+                        onClick = onClickTextCorrection
+                    )
                 }
                 item("layouts") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_secondary_layouts),
-                        onClick = onClickLayouts,
-                        icon = R.drawable.ic_ime_switcher
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_secondary_layouts),
+                        subtitle = "Symbols and numpad layouts",
+                        icon = R.drawable.ic_ime_switcher,
+                        iconBgColor = Color(0xFF5E35B1), // Deep Purple
+                        onClick = onClickLayouts
+                    )
                 }
                 item("dictionaries") {
-                    Preference(
-                        name = stringResource(R.string.dictionary_settings_category),
-                        onClick = onClickDictionaries,
-                        icon = R.drawable.ic_dictionary
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.dictionary_settings_category),
+                        subtitle = "Personal and add-on dictionaries",
+                        icon = R.drawable.ic_dictionary,
+                        iconBgColor = Color(0xFF43A047), // Green
+                        onClick = onClickDictionaries
+                    )
                 }
                 item("advanced") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_advanced),
-                        onClick = onClickAdvanced,
-                        icon = R.drawable.ic_settings_advanced
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_advanced),
+                        subtitle = "Expert and experimental settings",
+                        icon = R.drawable.ic_settings_advanced,
+                        iconBgColor = Color(0xFF6D4C41), // Brown
+                        onClick = onClickAdvanced
+                    )
                 }
                 item("about") {
-                    Preference(
-                        name = stringResource(R.string.settings_screen_about),
-                        onClick = onClickAbout,
-                        icon = R.drawable.ic_settings_about
-                    ) { NextScreenIcon() }
+                    ExpressiveCardPreference(
+                        title = stringResource(R.string.settings_screen_about),
+                        subtitle = "App info, links, and developers",
+                        icon = R.drawable.ic_settings_about,
+                        iconBgColor = Color(0xFFE53935), // Red
+                        onClick = onClickAbout
+                    )
                 }
             }
         }
@@ -203,117 +188,63 @@ fun MainSettingsScreen(
 }
 
 @Composable
-private fun QuickSetupCard(
-    onClickGestureTyping: () -> Unit,
-    onClickDictionaries: () -> Unit,
-    onClickCloud: () -> Unit,
+private fun ExpressiveCardPreference(
+    title: String,
+    subtitle: String?,
+    icon: Int,
+    iconBgColor: Color,
+    onClick: () -> Unit
 ) {
-    val ctx = LocalContext.current
-    val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
-    if ((b?.value ?: 0) < 0)
-        Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-
-    val enabledSubtypes = remember(b?.value) { SubtypeSettings.getEnabledSubtypes(true) }
-
-    // Completion states:
-    val isGestureComplete = remember(b?.value) { JniUtils.sHaveGestureLib }
-    val isDictionaryComplete = remember(b?.value, enabledSubtypes) {
-        enabledSubtypes.isNotEmpty() && enabledSubtypes.all { subtype ->
-            val (userDicts, hasInternal) = getUserAndInternalDictionaries(ctx, subtype.locale())
-            hasInternal || userDicts.isNotEmpty()
-        }
-    }
-    val isCloudComplete = remember(b?.value) {
-        ctx.prefs().getBoolean("pref_enable_cloud_features", false)
-    }
-
-    val allStepsComplete = isGestureComplete && isDictionaryComplete && isCloudComplete
-
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
-
-    val accentColor = if (allStepsComplete) Color(0xFF388E3C) else MaterialTheme.colorScheme.primary
-    val containerColor = if (allStepsComplete) Color(0xFF4CAF50).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
-
     Card(
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = containerColor
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { onClick() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = allStepsComplete) { isExpanded = !isExpanded }
-                .padding(16.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(iconBgColor, CircleShape),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(if (allStepsComplete) R.drawable.ic_setup_check else R.drawable.ic_settings_about_wiki),
+                    painter = painterResource(icon),
                     contentDescription = null,
-                    tint = accentColor,
+                    tint = Color.White,
                     modifier = Modifier.size(24.dp)
                 )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (allStepsComplete) "Setup is complete!" else stringResource(R.string.quick_setup_title),
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = accentColor,
-                    modifier = Modifier.weight(1f)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                if (allStepsComplete) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_left),
-                        contentDescription = if (isExpanded) "Collapse" else "Expand",
-                        tint = accentColor,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .rotate(if (isExpanded) 90f else -90f)
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = if (allStepsComplete) "All essential settings have been successfully configured." else stringResource(R.string.quick_setup_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        }
+    }
+}
 
-            AnimatedVisibility(
-                visible = !allStepsComplete || isExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Column {
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    QuickSetupStep(
-                        icon = R.drawable.ic_settings_gesture,
-                        title = stringResource(R.string.quick_setup_gesture_title),
-                        description = stringResource(R.string.quick_setup_gesture_desc),
-                        onClick = onClickGestureTyping,
-                        isComplete = isGestureComplete,
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    QuickSetupStep(
-                        icon = R.drawable.ic_dictionary,
-                        title = stringResource(R.string.quick_setup_dict_title),
-                        description = stringResource(R.string.quick_setup_dict_desc),
-                        onClick = onClickDictionaries,
-                        isComplete = isDictionaryComplete,
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    QuickSetupStep(
-                        icon = R.drawable.ic_settings_advanced,
-                        title = stringResource(R.string.quick_setup_cloud_title),
-                        description = stringResource(R.string.quick_setup_cloud_desc),
-                        onClick = onClickCloud,
-                        isComplete = isCloudComplete,
-                    )
+@Preview
+@Composable
 private fun PreviewScreen() {
     initPreview(LocalContext.current)
     Theme(previewDark) {
