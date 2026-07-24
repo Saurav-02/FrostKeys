@@ -74,6 +74,7 @@ object KeyCode {
     const val EMOJI =                       -212 // IME_UI_MODE_MEDIA
     const val CLIPBOARD =                   -213 // IME_UI_MODE_CLIPBOARD
     const val AI_TOOLS =                    -214 // IME_UI_MODE_AI_TOOLS
+    const val TRANSLATE =                   -10050
 
     const val SYSTEM_INPUT_METHOD_PICKER =  -221
     //const val SYSTEM_PREV_INPUT_METHOD =    -222
