@@ -119,6 +119,7 @@ fun getCodeForToolbarKey(key: ToolbarKey) = Settings.getInstance().getCustomTool
     GIFS -> KeyCode.GIFS
     STICKERS -> KeyCode.STICKERS
     RESIZE -> KeyCode.RESIZE_KEYBOARD
+    TRANSLATE -> KeyCode.TRANSLATE
 }
 
 fun getCodeForToolbarKeyLongClick(key: ToolbarKey) = Settings.getInstance().getCustomToolbarLongpressCode(key) ?: when (key) {
