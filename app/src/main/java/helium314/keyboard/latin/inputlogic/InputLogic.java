@@ -838,8 +838,12 @@ public final class InputLogic {
                 break;
             case KeyCode.TRANSLATE:
                 try {
-                    if (mSuggestionStripViewAccessor instanceof helium314.keyboard.latin.suggestions.SuggestionStripView) {
-                        ((helium314.keyboard.latin.suggestions.SuggestionStripView) mSuggestionStripViewAccessor).showTranslationBar(mLatinIME);
+                    android.app.Dialog keyboardWindow = mLatinIME.getWindow();
+                    if (keyboardWindow != null) {
+                        android.view.View stripView = keyboardWindow.findViewById(helium314.keyboard.latin.R.id.suggestion_strip_view);
+                        if (stripView instanceof helium314.keyboard.latin.suggestions.SuggestionStripView) {
+                            ((helium314.keyboard.latin.suggestions.SuggestionStripView) stripView).showTranslationBar(mLatinIME);
+                        }
                     }
                 } catch (Exception e) {
                     helium314.keyboard.latin.utils.Log.e("Translate", "Error showing translation bar", e);
