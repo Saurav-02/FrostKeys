@@ -1,8 +1,6 @@
-// SPDX-License-Identifier: GPL-3.0-only
+here// SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.settings.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,9 +33,8 @@ fun AboutScreen(
                 title = { Text(stringResource(R.string.settings_screen_about)) },
                 navigationIcon = {
                     IconButton(onClick = onClickBack) {
-                        // FIXED: Using the local drawable instead of the Compose Icons library
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back), 
+                            painter = painterResource(R.drawable.ic_arrow_back),
                             contentDescription = "Back"
                         )
                     }
@@ -91,10 +88,10 @@ fun AboutScreen(
             // Lead Developer Card
             DeveloperCard(
                 title = "Saurav",
-                subtitle = "Lead Developer & UI/UX Designer",
+                subtitle = "UI/UX Makeover & Custom Features",
                 description = "Bringing Material You aesthetics, custom tools, and a seamless typing experience to FrostKeys.",
-                githubUrl = "[https://github.com/Saurav-02/FrostKeys](https://github.com/Saurav-02/FrostKeys)",
-                telegramUrl = "[https://t.me/saurav124x](https://t.me/saurav124x)"
+                githubUrl = "https://github.com/Saurav-02/FrostKeys",
+                telegramUrl = "https://t.me/saurav124x"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -104,8 +101,8 @@ fun AboutScreen(
                 title = "Original HeliBoard Project",
                 subtitle = "Core Architecture & AOSP Base",
                 description = "FrostKeys is proudly built upon the incredibly solid foundation of the open-source HeliBoard project.",
-                githubUrl = "[https://github.com/HeliBorg/HeliBoard](https://github.com/HeliBorg/HeliBoard)",
-                telegramUrl = null
+                githubUrl = "https://github.com/HeliBorg/HeliBoard",
+                telegramUrl = "https://t.me/heliboard"
             )
         }
     }
@@ -119,7 +116,7 @@ private fun DeveloperCard(
     githubUrl: String,
     telegramUrl: String?
 ) {
-    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -156,7 +153,7 @@ private fun DeveloperCard(
             ) {
                 FilledTonalButton(
                     onClick = { 
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(githubUrl)))
+                        try { uriHandler.openUri(githubUrl) } catch (e: Exception) {}
                     },
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                 ) {
@@ -172,7 +169,7 @@ private fun DeveloperCard(
                 if (telegramUrl != null) {
                     FilledTonalButton(
                         onClick = {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(telegramUrl)))
+                            try { uriHandler.openUri(telegramUrl) } catch (e: Exception) {}
                         },
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                         colors = ButtonDefaults.filledTonalButtonColors(
