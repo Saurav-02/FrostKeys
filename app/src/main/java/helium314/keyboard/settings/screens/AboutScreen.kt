@@ -59,7 +59,7 @@ fun AboutScreen(
 
             // App Header
             Image(
-                painter = painterResource(id = R.mipmap.ic_launcher_round),
+                painter = painterResource(id = R.mipmap.ic_launcher_monochrome),
                 contentDescription = "App Icon",
                 modifier = Modifier
                     .size(100.dp)
