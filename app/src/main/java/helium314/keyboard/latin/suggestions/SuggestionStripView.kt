@@ -1252,76 +1252,87 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         private val PinnedDropPlaceholder = Any()
     }
         fun showTranslationBar(latinIME: helium314.keyboard.latin.LatinIME) {
-        val composeView = ComposeView(context).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-            setContent {
-                var sourceText by remember { mutableStateOf("") }
+        try {
+            val composeView = ComposeView(context).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT
+                )
                 
-                // For now these are hardcoded, but you can hook these up to a DropdownMenu later!
-                var sourceLang by remember { mutableStateOf("en") } 
-                var targetLang by remember { mutableStateOf("es") } 
+                composeLifecycleOwner?.let {
+                    setViewTreeLifecycleOwner(it)
+                    setViewTreeSavedStateRegistryOwner(it)
+                    setViewTreeViewModelStoreOwner(it)
+                }
                 
-                val coroutineScope = rememberCoroutineScope()
-                val keyboardColors = colorsState.value ?: Settings.getValues().mColors
-                val textColor = ComposeColor(keyboardColors.get(ColorType.KEY_TEXT))
-                val surfaceColor = ComposeColor(keyboardColors.get(ColorType.STRIP_BACKGROUND))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(surfaceColor)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Language Selectors
-                    Text(sourceLang.uppercase(Locale.getDefault()), color = textColor, fontSize = 14.sp, modifier = Modifier.clickable { /* TODO: Add Lang Picker */ })
-                    Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = textColor, modifier = Modifier.size(16.dp))
-                    Text(targetLang.uppercase(Locale.getDefault()), color = textColor, fontSize = 14.sp, modifier = Modifier.clickable { /* TODO: Add Lang Picker */ })
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    var sourceText by remember { mutableStateOf("") }
+                    // For now these are hardcoded, but you can hook these up to a DropdownMenu later!
+                    var sourceLang by remember { mutableStateOf("en") } 
+                    var targetLang by remember { mutableStateOf("es") } 
                     
-                    // Live Input Field
-                    Box(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
-                        if (sourceText.isEmpty()) {
-                            Text("Type to translate...", color = textColor.copy(alpha = 0.5f), fontSize = 16.sp)
-                        }
-                        BasicTextField(
-                            value = sourceText,
-                            onValueChange = { newText ->
-                                sourceText = newText
-                                coroutineScope.launch {
-                                    // Hit our TranslateService from Step 1
-                                    val res = TranslateService.translate(newText, sourceLang, targetLang)
-                                    if (res.isSuccess) {
-                                        val translated = res.getOrNull() ?: ""
-                                        withContext(Dispatchers.Main) {
-                                            // Push the live translation directly into the active text editor
-                                            latinIME.currentInputConnection?.setComposingText(translated, 1)
+                    val coroutineScope = rememberCoroutineScope()
+                    val keyboardColors = colorsState.value ?: Settings.getValues().mColors
+                    val textColor = ComposeColor(keyboardColors.get(ColorType.KEY_TEXT))
+                    val surfaceColor = ComposeColor(keyboardColors.get(ColorType.STRIP_BACKGROUND))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(surfaceColor)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Language Selectors
+                        Text(sourceLang.uppercase(java.util.Locale.getDefault()), color = textColor, fontSize = 14.sp, modifier = Modifier.clickable { /* TODO: Add Lang Picker */ })
+                        Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = textColor, modifier = Modifier.size(16.dp))
+                        Text(targetLang.uppercase(java.util.Locale.getDefault()), color = textColor, fontSize = 14.sp, modifier = Modifier.clickable { /* TODO: Add Lang Picker */ })
+                        
+                        // Live Input Field
+                        Box(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
+                            if (sourceText.isEmpty()) {
+                                Text("Type to translate...", color = textColor.copy(alpha = 0.5f), fontSize = 16.sp)
+                            }
+                            BasicTextField(
+                                value = sourceText,
+                                onValueChange = { newText ->
+                                    sourceText = newText
+                                    coroutineScope.launch {
+                                        val res = TranslateService.translate(newText, sourceLang, targetLang)
+                                        if (res.isSuccess) {
+                                            val translated = res.getOrNull() ?: ""
+                                            withContext(Dispatchers.Main) {
+                                                latinIME.currentInputConnection?.setComposingText(translated, 1)
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = textColor, fontSize = 16.sp),
-                            modifier = Modifier.fillMaxWidth()
+                                },
+                                textStyle = androidx.compose.ui.text.TextStyle(color = textColor, fontSize = 16.sp),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        
+                        // Commit & Close Button
+                        Icon(
+                            painter = painterResource(R.drawable.ic_check_bold), 
+                            contentDescription = "Done",
+                            tint = textColor,
+                            modifier = Modifier.clickable {
+                                latinIME.currentInputConnection?.finishComposingText()
+                                listener.removeExternalSuggestions() 
+                            }
                         )
                     }
-                    
-                    // Commit & Close Button
-                    Icon(
-                        painter = painterResource(R.drawable.ic_check_bold), 
-                        contentDescription = "Done",
-                        tint = textColor,
-                        modifier = Modifier.clickable {
-                            // Finalize the text in the app and close the translation bar
-                            latinIME.currentInputConnection?.finishComposingText()
-                            listener.removeExternalSuggestions() 
-                        }
-                    )
                 }
             }
+            
+            setExternalSuggestionView(composeView, true)
+            
+        } catch (e: Exception) {
+            android.util.Log.e("FrostKeys", "Error mounting ComposeView for translation", e)
         }
-        
-        // This utilizes your keyboard's existing framework for showing custom strips!
-        setExternalSuggestionView(composeView, true) 
         }
 
     private class FixedSizeDrawable(
